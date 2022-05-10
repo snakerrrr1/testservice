@@ -1,0 +1,22 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <routeContext id="routeException" xmlns="http://camel.apache.org/schema/spring">
+		
+		<!-- Ruta encargada de controlar los reintentos JMS para situaciones de excepción por fallas de
+		conexión hacia los backend declarados u orquestados, se aplica tiempo de expiración del mensaje
+		como ademas cambio de prioridad para ser atendido con mayor celeridad -->
+		<route>
+			<from uri="direct:exceptionRetry"></from>
+ 
+ 			<log message="Estructura JMS a reintentar: ${headers}"></log>
+			<process ref="procesadorJMSAttributes"/>
+			
+			<setBody><simple>${headers.bodyRequest}</simple></setBody>
+			<to uri="jms:queue:demoQueue?preserveMessageQos=true"></to>			
+		</route>
+    </routeContext>
+</beans>

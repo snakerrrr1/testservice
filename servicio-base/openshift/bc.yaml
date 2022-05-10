@@ -1,0 +1,57 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+  creationTimestamp: null
+  labels:
+    app: <NAME_SERVICE>
+    app.kubernetes.io/component: <NAME_SERVICE>
+    app.kubernetes.io/instance: <NAME_SERVICE>
+  name: <NAME_SERVICE>
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: <NAME_SERVICE>:latest
+  postCommit: {}
+  runPolicy: Serial
+  source:
+    git:
+      ref: feature/init
+      uri: <URL_REPOSITORIO_GIT>
+    sourceSecret:
+      name: sucvirv2-bitbucket
+    type: Git
+  resources:
+    limits:
+      cpu: 800m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 300Mi
+  strategy:
+    sourceStrategy:
+      env:
+      - name: MAVEN_MIRROR_URL
+        value: '<MAVEN_REPO>'
+      incremental: true
+      from:
+        kind: ImageStreamTag
+        name: fuse7-java-openshift:1.6
+        namespace: openshift
+    type: Source
+  successfulBuildsHistoryLimit: 5
+  triggers:
+  - github:
+      secret: R0iF3vNtTJwhEeMOjGcv
+    type: GitHub
+  - generic:
+      secret: nsqjscdjAwsXtI6o2vKy
+    type: Generic
+  - type: ConfigChange
+  - imageChange:
+      lastTriggeredImageID: image-registry.openshift-image-registry.svc:5000/openshift/fuse7-java-openshift@sha256:3250103a91a56e8412beec784016475326cb9e8eec47fb1ef3280520c3d66d18
+    type: ImageChange

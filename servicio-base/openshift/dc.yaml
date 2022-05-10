@@ -1,0 +1,96 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+  creationTimestamp: null
+  generation: 1
+  labels:
+    app: sucvirv2-servicio-comp-cargas-familiares
+    app.kubernetes.io/component: sucvirv2-servicio-comp-cargas-familiares
+    app.kubernetes.io/instance: sucvirv2-servicio-comp-cargas-familiares
+  name: sucvirv2-servicio-comp-cargas-familiares
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    deploymentconfig: sucvirv2-servicio-comp-cargas-familiares
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: Rolling
+  template:
+    metadata:
+      annotations:
+        openshift.io/generated-by: OpenShiftNewApp
+      creationTimestamp: null
+      labels:
+        deploymentconfig: sucvirv2-servicio-comp-cargas-familiares
+    spec:
+      containers:
+      - env:
+        - name: LANG
+          value: en_US.UTF-8
+        envFrom:
+        - configMapRef:
+            name: 0-bd-confgimap
+        - configMapRef:
+            name: 0-comp-cargas-familiares-cm
+        image: image-registry.openshift-image-registry.svc:5000/sucursal-virtual-v2-dev/sucvirv2-servicio-comp-cargas-familiares@sha256:1d3758f5c49b3400ed61969dbbc76696deb5ada449efc5db5dcb2f7539362f68
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 100
+        name: sucvirv2-servicio-comp-cargas-familiares
+        ports:
+        - containerPort: 8778
+          protocol: TCP
+        - containerPort: 9779
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 100
+        resources:
+          limits:
+            memory: 345Mi
+          requests:
+            memory: 230Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  test: false
+  triggers:
+  - type: ConfigChange
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - sucvirv2-servicio-comp-cargas-familiares
+      from:
+        kind: ImageStreamTag
+        name: sucvirv2-servicio-comp-cargas-familiares:latest
+        namespace: sucursal-virtual-v2-dev
+    type: ImageChange

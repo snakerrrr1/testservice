@@ -1,0 +1,30 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <routeContext id="routeBussiness" xmlns="http://camel.apache.org/schema/spring">
+    
+    	<!-- Ruta encargada de recepcionar mensajes desde el borker de mensajes, por defecto se considera 50
+    	consumidores, es posible ajustarlo en relación al nivel de carga y contención de las capas inveriores,
+    	la ruta controla el manejo de excepciones para errores de comunicación hacia los backend -->
+		<route>
+			<from uri="jms:queue:demoQueue?concurrentConsumers=50"></from>
+			
+			<!-- Se respalda el body original obtenido desde el broker antes de realizar cualquier acción,
+			esto permitirá reencolar el mensaje en caso de alguna excepción -->
+			<setHeader headerName="bodyRequest"><simple>${body}</simple></setHeader>
+			
+			<log message="Mensaje obtenido desde la cola de mensajes: ${body}"></log>
+			<setBody><simple>{"value":${body}}</simple></setBody>
+
+			<!-- Invocación al microservicio que hará el registro de datos o auditorías, podría existir alguna orquestación en esta
+			capa si fuera necesario, el método se puede cambiar según el tipo de servicio a invocar -->
+			<removeHeaders pattern="CamelHttp*"/>
+		    <setHeader headerName="CamelHttpMethod"><constant>POST</constant></setHeader>
+			<to uri="http4:localhost:8084/api/v1/sicex/proxy/sna/example"></to>
+		</route>
+    </routeContext>
+	
+</beans>
